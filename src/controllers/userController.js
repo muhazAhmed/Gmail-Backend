@@ -3,6 +3,8 @@ const jwt = require ("jsonwebtoken")
 const bcrypt = require("bcrypt")
 
 
+
+
 const register = async (req, res) => {
     try {
         let data = req.body
@@ -54,6 +56,11 @@ const register = async (req, res) => {
         if(!dob){
             return res.status(400).json("Please enter date of birth")
         }
+        
+        if (!(/\d{1,2}(\/|-)\d{1,2}(\/|-)\d{2,4}/.test(dob)))
+        // regex for dd/mm/yyyy format?
+            return res.status(400).json("Why you are even alive?")
+        //date of birth regex?
         if(!gender){
             return res.status(400).json("Please select your gender")
         }
@@ -84,21 +91,19 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         let data = req.body
-        let {username, phone, password} = data
+        let { password, body} = data
 
-        if(!(username || phone)) return res.status(400).json("Please enter email or phone number")
-        // let findUser = await userModel.findOne({ username, phone })
+        let obj = {}
         
-        // if(username){
-        //     if(!findUser) return res.status(400).json("Email not found")
-        // }
-        if(phone){
-            let checkPhone = await userModel.findOne({phone})
-            if(!checkPhone) return res.status(400).json("Phone number is not registered")
+        if (!isNaN(body)) {
+            obj.phone=body
+        }
+        else{
+            obj.username = body
         }
         if(!password) return res.status(400).json("Please enter password");
         
-        let getUser = await userModel.findOne({ phone });
+        let getUser = await userModel.findOne(obj);
         if (!getUser) return res.status(401).json("Email or Password is incorrect.");
     
         let matchPassword = await bcrypt.compare(password, getUser.password);
